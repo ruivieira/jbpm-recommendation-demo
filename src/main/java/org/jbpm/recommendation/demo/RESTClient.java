@@ -11,7 +11,7 @@ public class RESTClient {
     private static final MarshallingFormat FORMAT = MarshallingFormat.JSON;
     private static final String OWNER = "wbadmin";
     private static final String PASSWORD = "wbadmin";
-    private static final String CONTAINER_ID = "recommendation6_1.0.0-SNAPSHOT";
+    private static final String CONTAINER_ID = "recommendation-demo_1.0.0-SNAPSHOT";
     private static final String PROCESS_ID = "UserTask";
     private static final int ITERATIONS = 50;
 
