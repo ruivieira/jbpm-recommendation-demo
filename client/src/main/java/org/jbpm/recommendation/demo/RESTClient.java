@@ -42,8 +42,11 @@ public class RESTClient {
             }
 
 
+
             ProcessServicesClient processClient = kieServicesClient.getServicesClient(ProcessServicesClient.class);
             Long processId = processClient.startProcess(CONTAINER_ID, PROCESS_ID, inputData);
+
+            System.out.println(String.format("Starting and completing task #%s (user=%s, level=%s, item=%s, approved=%s)", processId, "John", 5, "Lenovo", outputData.get("approved")));
 
             userTaskServicesClient.releaseTask(CONTAINER_ID, processId, OWNER);
             userTaskServicesClient.claimTask(CONTAINER_ID, processId, OWNER);
@@ -70,6 +73,8 @@ public class RESTClient {
 
             ProcessServicesClient processClient = kieServicesClient.getServicesClient(ProcessServicesClient.class);
             Long processId = processClient.startProcess(CONTAINER_ID, PROCESS_ID, inputData);
+
+            System.out.println(String.format("Starting and completing task #%s (user=%s, level=%s, item=%s, approved=%s)", processId, "John", 5, "Apple", outputData.get("approved")));
 
             userTaskServicesClient.releaseTask(CONTAINER_ID, processId, OWNER);
             userTaskServicesClient.claimTask(CONTAINER_ID, processId, OWNER);

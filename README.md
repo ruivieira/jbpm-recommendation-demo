@@ -46,6 +46,22 @@ Start the WB by running
 ./bin/standalone.sh
 ```
 
+
+
+The project consists of a single Human Task, which can be inspected using the WB. The task is generic and simple enough in order to demonstrate the working of the jBPM's recommendation API.
+
+![human_task](docs/images/human_task.png)
+
+For the purposes of the demonstration, this task will be used to model a simple purchasing task. Where the purchase of a laptop of a certain brand is requested and must be eventually manually approved. The tasks **inputs** are:
+
+- `item` - a `String` with the brand's name
+- `level` - an `Integer` representing a dummy variable to add an extra feature to the model
+- `ActorId` - a `String` representing the user requesting the purchase
+
+The task provides as outputs:
+
+- `approved` - a `Boolean` specifying whether the purchased was approved or not
+
 Add the HT in bulk by running the REST client in `RESTClient`.
 
 
