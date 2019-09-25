@@ -2,10 +2,8 @@
 
 Demo project for the recommendation service API in jBPM.
 
-First we will go through the necessary steps to setup the demo and lastly
-we will look at some implementation details on how the recommendation API works.
-This will allow you to learn how to create your own machine learning (ML) based
-recommendation services and how to integrate them with jBPM.
+First we will go through the necessary steps to setup the demo and lastly we will look at some implementation details on how the recommendation API works.
+This will allow you to learn how to create your own machine learning (ML) based recommendation services and how to integrate them with jBPM.
 
 # Setup
 
@@ -15,19 +13,28 @@ Download and install jBPM from [here](https://www.jbpm.org/download/download.htm
 
 ## Recommendation service
 
-Download the example prediction service backends from here.
-Alternatively, clone the repository:
+This repository contain an example recommendation service implementation as a Maven module and a REST client to populate the project with task to allow the predictive model training.
+Start by downloading, or alternatively cloning, the repository:
+
 ```$shell
-git clone git@github.com:ruivieira/kie-jpmml-integration.git
+$ git clone git@github.com:ruivieira/jbpm-recommendation-demo.git
 ```
 
-For this demo, the SMILE-based random forest service will be used.
-The service, which is in the Maven module `jbpm-recommendation-smile-random-forest`,
+For this demo, a random forest based service (using the [SMILE](https://github.com/haifengl/smile) library) will be used.
+This service, which is in the Maven module located in `services/jbpm-recommendation-smile-random-forest`,
 can be built with:
 
 ```shell
-cd jbpm-recommendation-smile-random-forest
-mvn clean install -T1C -DskipTests -Dgwt.compiler.skip=true -Dfindbugs.skip=true -Drevapi.skip=true -Denforcer.skip=true
+$ cd services/jbpm-recommendation-smile-random-forest
+$ mvn clean install -T1C -DskipTests -Dgwt.compiler.skip=true -Dfindbugs.skip=true -Drevapi.skip=true -Denforcer.skip=true
+```
+
+The resulting JAR file can then be included in the Workbench's `kie-server.war` located in `standalone/deployments` directory of your jBPM server installation.
+
+jBPM will search for a recommendation service with an identifier specified by a Java property named `org.jbpm.task.prediction.service`. Since in our demo, the random forest service has the indentifier `SMILERandomForest`, we can set this value before starting the workbench, for instance as an environment variable:
+
+```shell
+$ export JAVA_OPTS="-Dorg.jbpm.task.prediction.service=SMILERandomForest"
 ```
 
 ## Installing the project
