@@ -71,7 +71,15 @@ The task provides as outputs:
 
 ###  Batch creation of tasks
 
-Add the HT in bulk by running the REST client in `RESTClient`.
+This repository contains a REST client (under `client`) which allows to add Human Tasks in batch in order to have sufficient data points to train the model, so that we can have meaningful recommendations.
+
+***NOTE***:Before running the REST client, make sure that the Workbench is running and the demo project is deployed and also running.
+
+The class  `org.jbpm.recommendation.demo.RESTClient` performs this task and can be executed from the `client` directory with:
+
+```shell
+$ mvn exec:java -Dexec.mainClass="org.jbpm.recommendation.demo.RESTClient"
+```
 
 
 
@@ -82,6 +90,8 @@ Add the HT in bulk by running the REST client in `RESTClient`.
 jBPM offers an API which allows for predictive models to be trained with Human Tasks (HT) data and for HT to incorporate the model's predictions as outputs ore even complete a HT.
 
 This is achieved by connecting the HT handling to a *recommendation service*. A recommendation service is simply any third-party class wich implements the `org.kie.internal.task.api.prediction.PredictionService` interface.
+
+![api_diagram](docs/images/api.png)
 
 This interface consists of three methods:
 
@@ -100,3 +110,8 @@ This class will contain:
 - A `confidenceThreshold` - this value represents the `confidence` cutoff after which an action can be taken by the HT item handler.
 
 As example, let's assume our `confidence` represents a prediction probability between `0.0` and `1.0`. If the `confidenceThreshold` is `0.7`, that would mean that for ` confidence > 0.7` the HT outputs would be set to the `outcome` and the task automatically closed. If the `confidence < 0.7`, then the HT would set the prediction `outcome` as suggested values, but the task would not be closed and still need human interaction. If the `outcome` is empty, then the HT lifecycle would proceed as if no prediction was made.
+
+![sequence](docs/images/sequence.png)
+
+## Example service implementation
+
