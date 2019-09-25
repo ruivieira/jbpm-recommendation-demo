@@ -1,6 +1,5 @@
 package org.jbpm.recommendation.demo;
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.kie.server.api.marshalling.MarshallingFormat;
 import org.kie.server.client.*;
 
@@ -14,7 +13,7 @@ public class RESTClient {
     private static final String PASSWORD = "wbadmin";
     private static final String CONTAINER_ID = "recommendation-demo_1.0.0-SNAPSHOT";
     private static final String PROCESS_ID = "UserTask";
-    private static final int ITERATIONS = 50;
+    private static final int ITERATIONS = 100;
     private KieServicesConfiguration conf;
     private KieServicesClient kieServicesClient;
     private UserTaskServicesClient userTaskServicesClient;
@@ -52,11 +51,13 @@ public class RESTClient {
         final RESTClient client = new RESTClient();
 
         for (int i = 0 ; i < ITERATIONS ; i++) {
-            client.addTask("John", 5, "Lenovo", true);
-            client.addTask("John", 5, "Lenovo", false);
-            client.addTask("John", 5, "Apple", true);
-            client.addTask("John", 5, "Apple", false);
+                client.addTask("John", 5, "Lenovo", false);
+                client.addTask("John", 5, "Lenovo", true);
         }
+        for (int i = 0 ; i < 40 ; i++) {
+            client.addTask("John", 5, "Lenovo", true);
+        }
+
     }
 
 }

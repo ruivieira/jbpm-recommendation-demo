@@ -73,15 +73,13 @@ The task provides as outputs:
 
 This repository contains a REST client (under `client`) which allows to add Human Tasks in batch in order to have sufficient data points to train the model, so that we can have meaningful recommendations.
 
-***NOTE***:Before running the REST client, make sure that the Workbench is running and the demo project is deployed and also running.
+***NOTE***: Before running the REST client, make sure that the Workbench is running and the demo project is deployed and also running.
 
 The class  `org.jbpm.recommendation.demo.RESTClient` performs this task and can be executed from the `client` directory with:
 
 ```shell
 $ mvn exec:java -Dexec.mainClass="org.jbpm.recommendation.demo.RESTClient"
 ```
-
-
 
 # Description
 
@@ -115,3 +113,14 @@ As example, let's assume our `confidence` represents a prediction probability be
 
 ## Example service implementation
 
+When creating and completing a batch of tasks (as previously) we are simultaneously training the predictive model.
+
+The service implementation is based on a random forest model a popular ensemble learning method.
+
+You will notice that all the tasks created and completed by the `RESTClient` have the input data of `John` as `ActorId`, `Lenovo` as the `item` and `5` as the `level`. However, half the tasks are completed as having `true` as `approved` and the other half having `false`. This is to illustrate the scenario where the prediction confidence is lower than the threshold.
+
+In this service, the confidence threshold is set as `0.7` and, intuitively, we can expect that a predicted outcome for `John`, `Lenovo` and `5` would be either `true`or `false` with a confidence close to `0.5` (50% probability).
+
+In fact, after the training is performed, if we create a.new task instance and provided the above input data, we will see that the task form recommends `true` with a confidence of `0.5`
+
+![form](docs/images/form.png)
