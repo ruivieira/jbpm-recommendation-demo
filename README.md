@@ -62,6 +62,8 @@ The task provides as outputs:
 
 - `approved` - a `Boolean` specifying whether the purchased was approved or not
 
+###  Batch creation of tasks
+
 Add the HT in bulk by running the REST client in `RESTClient`.
 
 
