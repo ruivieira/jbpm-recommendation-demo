@@ -111,6 +111,12 @@ As example, let's assume our `confidence` represents a prediction probability be
 
 ![sequence](docs/images/sequence.png)
 
+The initial step is then, as defined above, the `predict` step.
+
+In the scenario where the the prediction's confidence is above the threshold, the task is automatically completed. If that the confidence is not above the threshold, however, when the task is eventually completed both the inputs and the outputs will then be used to further train the model by calling the prediction service's `train` method.
+
+![train](docs/images/sequence_train.png)
+
 ## Example service implementation
 
 When creating and completing a batch of tasks (as previously) we are simultaneously training the predictive model.

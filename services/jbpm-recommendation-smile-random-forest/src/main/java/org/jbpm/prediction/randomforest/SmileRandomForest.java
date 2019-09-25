@@ -169,7 +169,7 @@ public class SmileRandomForest extends AbstractPredictionEngine implements Predi
             double prediction = model.predict(features, posteriori);
 
             String predictionStr = dataset.responseAttribute().toString(prediction);
-            outcomes.put(outcomeAttribute.getName(), predictionStr);
+            outcomes.put(outcomeAttribute.getName(), Boolean.valueOf(predictionStr));
             final double confidence = posteriori[(int) prediction];
             outcomes.put("confidence", confidence);
 
