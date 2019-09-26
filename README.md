@@ -2,10 +2,8 @@
 
 Demo project for the recommendation service API in jBPM.
 
-First we will go through the necessary steps to setup the demo and lastly
-we will look at some implementation details on how the recommendation API works.
-This will allow you to learn how to create your own machine learning (ML) based
-recommendation services and how to integrate them with jBPM.
+First we will go through the necessary steps to setup the demo and lastly we will look at some implementation details on how the recommendation API works.
+This will allow you to learn how to create your own machine learning (ML) based recommendation services and how to integrate them with jBPM.
 
 # Setup
 
@@ -15,19 +13,28 @@ Download and install jBPM from [here](https://www.jbpm.org/download/download.htm
 
 ## Recommendation service
 
-Download the example prediction service backends from here.
-Alternatively, clone the repository:
+This repository contain an example recommendation service implementation as a Maven module and a REST client to populate the project with task to allow the predictive model training.
+Start by downloading, or alternatively cloning, the repository:
+
 ```$shell
-git clone git@github.com:ruivieira/kie-jpmml-integration.git
+$ git clone git@github.com:ruivieira/jbpm-recommendation-demo.git
 ```
 
-For this demo, the SMILE-based random forest service will be used.
-The service, which is in the Maven module `jbpm-recommendation-smile-random-forest`,
+For this demo, a random forest based service (using the [SMILE](https://github.com/haifengl/smile) library) will be used.
+This service, which is in the Maven module located in `services/jbpm-recommendation-smile-random-forest`,
 can be built with:
 
 ```shell
-cd jbpm-recommendation-smile-random-forest
-mvn clean install -T1C -DskipTests -Dgwt.compiler.skip=true -Dfindbugs.skip=true -Drevapi.skip=true -Denforcer.skip=true
+$ cd services/jbpm-recommendation-smile-random-forest
+$ mvn clean install -T1C -DskipTests -Dgwt.compiler.skip=true -Dfindbugs.skip=true -Drevapi.skip=true -Denforcer.skip=true
+```
+
+The resulting JAR file can then be included in the Workbench's `kie-server.war` located in `standalone/deployments` directory of your jBPM server installation.
+
+jBPM will search for a recommendation service with an identifier specified by a Java property named `org.jbpm.task.prediction.service`. Since in our demo, the random forest service has the indentifier `SMILERandomForest`, we can set this value before starting the workbench, for instance as an environment variable:
+
+```shell
+$ export JAVA_OPTS="-Dorg.jbpm.task.prediction.service=SMILERandomForest"
 ```
 
 ## Installing the project
@@ -64,9 +71,15 @@ The task provides as outputs:
 
 ###  Batch creation of tasks
 
-Add the HT in bulk by running the REST client in `RESTClient`.
+This repository contains a REST client (under `client`) which allows to add Human Tasks in batch in order to have sufficient data points to train the model, so that we can have meaningful recommendations.
 
+***NOTE***: Before running the REST client, make sure that the Workbench is running and the demo project is deployed and also running.
 
+The class  `org.jbpm.recommendation.demo.RESTClient` performs this task and can be executed from the `client` directory with:
+
+```shell
+$ mvn exec:java -Dexec.mainClass="org.jbpm.recommendation.demo.RESTClient"
+```
 
 # Description
 
@@ -75,6 +88,8 @@ Add the HT in bulk by running the REST client in `RESTClient`.
 jBPM offers an API which allows for predictive models to be trained with Human Tasks (HT) data and for HT to incorporate the model's predictions as outputs ore even complete a HT.
 
 This is achieved by connecting the HT handling to a *recommendation service*. A recommendation service is simply any third-party class wich implements the `org.kie.internal.task.api.prediction.PredictionService` interface.
+
+![api_diagram](docs/images/api.png)
 
 This interface consists of three methods:
 
@@ -93,3 +108,25 @@ This class will contain:
 - A `confidenceThreshold` - this value represents the `confidence` cutoff after which an action can be taken by the HT item handler.
 
 As example, let's assume our `confidence` represents a prediction probability between `0.0` and `1.0`. If the `confidenceThreshold` is `0.7`, that would mean that for ` confidence > 0.7` the HT outputs would be set to the `outcome` and the task automatically closed. If the `confidence < 0.7`, then the HT would set the prediction `outcome` as suggested values, but the task would not be closed and still need human interaction. If the `outcome` is empty, then the HT lifecycle would proceed as if no prediction was made.
+
+![sequence](docs/images/sequence.png)
+
+The initial step is then, as defined above, the `predict` step.
+
+In the scenario where the the prediction's confidence is above the threshold, the task is automatically completed. If that the confidence is not above the threshold, however, when the task is eventually completed both the inputs and the outputs will then be used to further train the model by calling the prediction service's `train` method.
+
+![train](docs/images/sequence_train.png)
+
+## Example service implementation
+
+When creating and completing a batch of tasks (as previously) we are simultaneously training the predictive model.
+
+The service implementation is based on a random forest model a popular ensemble learning method.
+
+You will notice that all the tasks created and completed by the `RESTClient` have the input data of `John` as `ActorId`, `Lenovo` as the `item` and `5` as the `level`. However, half the tasks are completed as having `true` as `approved` and the other half having `false`. This is to illustrate the scenario where the prediction confidence is lower than the threshold.
+
+In this service, the confidence threshold is set as `0.7` and, intuitively, we can expect that a predicted outcome for `John`, `Lenovo` and `5` would be either `true`or `false` with a confidence close to `0.5` (50% probability).
+
+In fact, after the training is performed, if we create a.new task instance and provided the above input data, we will see that the task form recommends `true` with a confidence of `0.5`
+
+![form](docs/images/form.png)
