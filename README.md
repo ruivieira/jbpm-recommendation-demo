@@ -59,13 +59,13 @@ The project consists of a single Human Task, which can be inspected using the WB
 
 ![human_task](docs/images/human_task.png)
 
-For the purposes of the demonstration, this task will be used to model a simple purchasing task. Where the purchase of a laptop of a certain brand is requested and must be eventually manually approved. The tasks **inputs** are:
+For the purposes of the demonstration, this task will be used to model a simple purchasing task where the purchase of a laptop of a certain brand is requested and must be, eventually, manually approved. The tasks **inputs** are:
 
 - `item` - a `String` with the brand's name
-- `level` - an `Integer` representing a dummy variable to add an extra feature to the model
+- `price` - a `Float` representing the laptop's price
 - `ActorId` - a `String` representing the user requesting the purchase
 
-The task provides as outputs:
+The task provides as **outputs**:
 
 - `approved` - a `Boolean` specifying whether the purchased was approved or not
 
@@ -80,6 +80,20 @@ The class  `org.jbpm.recommendation.demo.RESTClient` performs this task and can 
 ```shell
 $ mvn exec:java -Dexec.mainClass="org.jbpm.recommendation.demo.RESTClient"
 ```
+
+The client will then simulate the creation and completion of human tasks, during which the model will be trained.
+
+The tasks' completion will adhere to the following logic:
+
+* The purchase of a laptop of brand `Lenovo` requested by user `John` or `Mary` will be approved if the price is around $1500
+* The purchase of a laptop of brand `Apple` requested by user `John` or  `Mary` will be approved if the price is around $2500
+* The purchase of a laptop of brand `Lenovo` requested by user `John` or  `Mary` will be rejected if the price is around $2500
+
+The prices for Lenovo and Apple laptop are drawn from Normal distributions with respective means of 1500 and 2500 (pictured below). Although the recommendation service is not aware of the deterministic rules we've used to set the task outcome, it will train the model based on the data it receives.
+
+In the following sections we will explain the internal working of a recommendation service, how to test this project in the Workbench and how to create your own recommendation service.
+
+![prices](docs/images/prices.png)
 
 # Description
 
@@ -119,14 +133,22 @@ In the scenario where the the prediction's confidence is above the threshold, th
 
 ## Example service implementation
 
-When creating and completing a batch of tasks (as previously) we are simultaneously training the predictive model.
+As we've seen previously, when creating and completing a batch of tasks (as previously) we are simultaneously training the predictive model. The service implementation is based on a random forest model a popular ensemble learning method.
 
-The service implementation is based on a random forest model a popular ensemble learning method.
+After the model is trained with the task from `RESTClient`, we will now create a new Human Task.
 
-You will notice that all the tasks created and completed by the `RESTClient` have the input data of `John` as `ActorId`, `Lenovo` as the `item` and `5` as the `level`. However, half the tasks are completed as having `true` as `approved` and the other half having `false`. This is to illustrate the scenario where the prediction confidence is lower than the threshold.
+If we create a HT requesting the purchase of an `Apple` laptop from `John` with the price $2500, we should expect it to be approved.
 
-In this service, the confidence threshold is set as `0.7` and, intuitively, we can expect that a predicted outcome for `John`, `Lenovo` and `5` would be either `true`or `false` with a confidence close to `0.5` (50% probability).
-
-In fact, after the training is performed, if we create a.new task instance and provided the above input data, we will see that the task form recommends `true` with a confidence of `0.5`
+If fact, when claiming the task, we can see that the recommendation service recommends the purchase to be approved with a "confidence" of 91%.
 
 ![form](docs/images/form.png)
+
+If he now create a task for the request of a `Lenovo` laptop from `Mary` with the price $1437, he would expect it to be approved. We can see that this is the case, where the form is filled in by the recommendation service with an approved status with a "confidence" of 86.5%.
+
+![form2](docs/images/form2.png)
+
+We can also see, as expected, what happens when `John` tries to order a `Lenovo` for $2700. The recommendation service fills the form as "not approved" with a "confidence" of 71%.
+
+![form3](docs/images/form3.png)
+
+In this service, the confidence threshold is set as `0.95` and as such the task was not closed automatically.
