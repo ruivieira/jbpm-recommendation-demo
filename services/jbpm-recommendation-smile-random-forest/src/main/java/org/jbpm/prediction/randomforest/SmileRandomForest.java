@@ -8,8 +8,6 @@ import org.slf4j.LoggerFactory;
 import smile.classification.RandomForest;
 import smile.data.*;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.util.*;
 
@@ -74,13 +72,13 @@ public class SmileRandomForest extends AbstractPredictionEngine implements Predi
 
         final Map<String, AttributeType> inputFeatures = new HashMap<>();
         inputFeatures.put("ActorId", AttributeType.NOMINAL);
-        inputFeatures.put("level", AttributeType.NOMINAL);
+        inputFeatures.put("price", AttributeType.NUMERIC);
         inputFeatures.put("item", AttributeType.NOMINAL);
         configuration.setInputFeatures(inputFeatures);
 
         configuration.setOutcomeName("approved");
         configuration.setOutcomeType(AttributeType.NOMINAL);
-        configuration.setConfidenceThreshold(0.7);
+        configuration.setConfidenceThreshold(1.0);
         configuration.setNumTrees(100);
 
         return configuration;

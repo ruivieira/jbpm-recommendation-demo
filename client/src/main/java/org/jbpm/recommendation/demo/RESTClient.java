@@ -1,5 +1,6 @@
 package org.jbpm.recommendation.demo;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.kie.server.api.marshalling.MarshallingFormat;
 import org.kie.server.client.*;
 
@@ -13,7 +14,7 @@ public class RESTClient {
     private static final String PASSWORD = "wbadmin";
     private static final String CONTAINER_ID = "recommendation-demo_1.0.0-SNAPSHOT";
     private static final String PROCESS_ID = "UserTask";
-    private static final int ITERATIONS = 100;
+    private static final int ITERATIONS = 200;
     private KieServicesConfiguration conf;
     private KieServicesClient kieServicesClient;
     private UserTaskServicesClient userTaskServicesClient;
@@ -26,10 +27,10 @@ public class RESTClient {
         this.userTaskServicesClient = kieServicesClient.getServicesClient(UserTaskServicesClient.class);
     }
 
-    public void addTask(String actor, int level, String item, Boolean approved) {
+    public void addTask(String actor, double level, String item, Boolean approved) {
         Map<String, Object> inputData = new HashMap<>();
         inputData.put("actor", actor);
-        inputData.put("level", level);
+        inputData.put("price", level);
         inputData.put("item", item);
         Map<String, Object> outputData = new HashMap<>();
         outputData.put("approved", approved);
@@ -50,12 +51,18 @@ public class RESTClient {
 
         final RESTClient client = new RESTClient();
 
+        // Purchases for Lenovos by John, using a price distribution of price ~ N(1500, 40)
+        final NormalDistribution lenovoPrice = new NormalDistribution(1500.0, 40.0);
+        final NormalDistribution applePrice = new NormalDistribution(2500.0, 40.0);
         for (int i = 0 ; i < ITERATIONS ; i++) {
-                client.addTask("John", 5, "Lenovo", false);
-                client.addTask("John", 5, "Lenovo", true);
+                client.addTask("John", lenovoPrice.sample(), "Lenovo", true);
+                client.addTask("Mary", applePrice.sample(), "Apple", true);
+                client.addTask("Mary", lenovoPrice.sample(), "Lenovo", true);
+                client.addTask("John", applePrice.sample(), "Apple", true);
         }
-        for (int i = 0 ; i < 40 ; i++) {
-            client.addTask("John", 5, "Lenovo", true);
+        for (int i = 0 ; i < ITERATIONS ; i++) {
+            client.addTask("John", applePrice.sample(), "Lenovo", false);
+            client.addTask("Mary", applePrice.sample(), "Lenovo", false);
         }
 
     }
