@@ -13,16 +13,15 @@ Download and install jBPM from [here](https://www.jbpm.org/download/download.htm
 
 ## Recommendation service
 
-This repository contain an example recommendation service implementation as a Maven module and a REST client to populate the project with task to allow the predictive model training.
+This repository contain two example recommendation service implementations as Maven modules and a REST client to populate the project with task to allow the predictive model training.
 Start by downloading, or alternatively cloning, the repository:
 
 ```$shell
 $ git clone git@github.com:ruivieira/jbpm-recommendation-demo.git
 ```
 
-For this demo, a random forest based service (using the [SMILE](https://github.com/haifengl/smile) library) will be used.
-This service, which is in the Maven module located in `services/jbpm-recommendation-smile-random-forest`,
-can be built with:
+For this demo, two random forest based services, one using the [SMILE](https://github.com/haifengl/smile) library and another as Predictive Model Markup Language ([PMML](https://en.wikipedia.org/wiki/Predictive_Model_Markup_Language)) model, will be used.
+The services, located respectively in `services/jbpm-recommendation-smile-random-forest` and `services/jbpm-recommendation-pmml-random-forest`, can be built with (using SMILE as an example):
 
 ```shell
 $ cd services/jbpm-recommendation-smile-random-forest
@@ -31,12 +30,22 @@ $ mvn clean install -T1C -DskipTests -Dgwt.compiler.skip=true  \
 	-Dcheckstyle.skip=true
 ```
 
-The resulting JAR file can then be included in the Workbench's `kie-server.war` located in `standalone/deployments` directory of your jBPM server installation.
+The resulting JAR file can then be included in the Workbench's `kie-server.war` located in `standalone/deployments` directory of your jBPM server installation. To do this, simply create a `WEB-INF/lib` , copy the compiled _jars_ into it and run
+
+```
+$ zip -r kie-server.war WEB-INF
+```
 
 jBPM will search for a recommendation service with an identifier specified by a Java property named `org.jbpm.task.prediction.service`. Since in our demo, the random forest service has the indentifier `SMILERandomForest`, we can set this value before starting the workbench, for instance as an environment variable:
 
 ```shell
 $ export JAVA_OPTS="-Dorg.jbpm.task.prediction.service=SMILERandomForest"
+```
+
+For the purpose of this documentation we will illustrate the steps using the SMILE-based service. The PMML-based service can be used by setting the above environment variable as
+
+```shell
+$ export JAVA_OPTS="-Dorg.jbpm.task.prediction.service=PMMLRandomForest"
 ```
 
 ## Installing the project
@@ -67,7 +76,7 @@ The task provides as **outputs**:
 
 - `approved` - a `Boolean` specifying whether the purchased was approved or not
 
-###  Batch creation of tasks
+## Batch creation of tasks
 
 This repository contains a REST client (under `client`) which allows to add Human Tasks in batch in order to have sufficient data points to train the model, so that we can have meaningful recommendations.
 
@@ -129,7 +138,9 @@ In the scenario where the the prediction's confidence is above the threshold, th
 
 ![train](docs/images/sequence_train.png)
 
-## Example service implementation
+## Example implementations
+
+### SMILE-based service
 
 As we've seen previously, when creating and completing a batch of tasks (as previously) we are simultaneously training the predictive model. The service implementation is based on a random forest model a popular ensemble learning method.
 
@@ -150,3 +161,6 @@ We can also see, as expected, what happens when `John` tries to order a `Lenovo`
 ![form3](docs/images/form3.png)
 
 In this service, the confidence threshold is set as `0.95` and as such the task was not closed automatically.
+
+### PMML-based service
+
