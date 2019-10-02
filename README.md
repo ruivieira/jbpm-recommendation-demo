@@ -26,7 +26,9 @@ can be built with:
 
 ```shell
 $ cd services/jbpm-recommendation-smile-random-forest
-$ mvn clean install -T1C -DskipTests -Dgwt.compiler.skip=true -Dfindbugs.skip=true -Drevapi.skip=true -Denforcer.skip=true
+$ mvn clean install -T1C -DskipTests -Dgwt.compiler.skip=true  \
+	-Dfindbugs.skip=true -Drevapi.skip=true -Denforcer.skip=true \
+	-Dcheckstyle.skip=true
 ```
 
 The resulting JAR file can then be included in the Workbench's `kie-server.war` located in `standalone/deployments` directory of your jBPM server installation.
@@ -39,21 +41,17 @@ $ export JAVA_OPTS="-Dorg.jbpm.task.prediction.service=SMILERandomForest"
 
 ## Installing the project
 
-From the Workbench (WB) select "_Import project_" and use the project git URL:
-
-```shell
-https://github.com/ruivieira/jbpm-recommendation-demo-project.git
-```
-
-## Running the project
-
 Start the WB by running
 
 ```
 ./bin/standalone.sh
 ```
 
+One the WB has completed the startup, you can go to [http://localhost:8080/business-central/](http://localhost:8080/business-central/) and login using the default admin credential `wbadmin/wbadmin`. After chosing the default workspace (or creating your own), then select "_Import project_" and use the project git URL:
 
+```shell
+https://github.com/ruivieira/jbpm-recommendation-demo-project.git
+```
 
 The project consists of a single Human Task, which can be inspected using the WB. The task is generic and simple enough in order to demonstrate the working of the jBPM's recommendation API.
 
