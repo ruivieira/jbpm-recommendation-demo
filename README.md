@@ -30,10 +30,16 @@ $ mvn clean install -T1C -DskipTests -Dgwt.compiler.skip=true  \
 	-Dcheckstyle.skip=true
 ```
 
-The resulting JAR file can then be included in the Workbench's `kie-server.war` located in `standalone/deployments` directory of your jBPM server installation. To do this, simply create a `WEB-INF/lib` , copy the compiled _jars_ into it and run
+The resulting JARs files can then be included in the Workbench's `kie-server.war` located in `standalone/deployments` directory of your jBPM server installation. To do this, simply create a `WEB-INF/lib` , copy the compiled _jars_ into it and run
 
-```
+```shell
 $ zip -r kie-server.war WEB-INF
+```
+
+The PMML-based service expects to find the PMML model in `META-INF`, so after copying the PMML file in `jbpm-recommendation-pmml-random-forest/src/main/resources/models/random_forest.pmml` into `META-INF`, it should also be included in the WAR by using
+
+```shell
+$ zip -r kie-server.war META-INF
 ```
 
 jBPM will search for a recommendation service with an identifier specified by a Java property named `org.jbpm.task.prediction.service`. Since in our demo, the random forest service has the indentifier `SMILERandomForest`, we can set this value before starting the workbench, for instance as an environment variable:
@@ -163,4 +169,15 @@ We can also see, as expected, what happens when `John` tries to order a `Lenovo`
 In this service, the confidence threshold is set as `0.95` and as such the task was not closed automatically.
 
 ### PMML-based service
+
+The second example implementation is the PMML-based recommendation service. PMML is a predictive model interchange standard, which allows for a wide variety of models to be reused in different platforms and programming languages.
+
+The service included in this demo consists of pre-trained model (with a dataset similar to the one generate by the `RESTClient`) which is executed by a PMML engine. For this demo, the engine used was [jpmml-evaluator](https://github.com/jpmml/jpmml-evaluator), the *de facto* reference implementation of the PMML specification.
+
+There are two main differences when comparing this service to the SMILE-based one:
+
+- *The model doesn't need the training phase.* The model has been already trained and serialised into the PMML format. This means that we can start using predictions straight away from jBPM.
+- *The `train` API method is a no-op in this case*. This means that whenever the service's `train` method is called, it will not be used for training in this example (only the `predict` method is needed for a "read-only" model), as we can see from the figure below.
+
+![](docs/images/sequence_pmml.png)
 

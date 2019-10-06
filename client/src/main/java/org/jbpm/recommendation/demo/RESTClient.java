@@ -27,10 +27,10 @@ public class RESTClient {
         this.userTaskServicesClient = kieServicesClient.getServicesClient(UserTaskServicesClient.class);
     }
 
-    public void addTask(String actor, double level, String item, Boolean approved) {
+    public void addTask(String actor, double price, String item, Boolean approved) {
         Map<String, Object> inputData = new HashMap<>();
         inputData.put("actor", actor);
-        inputData.put("price", level);
+        inputData.put("price", price);
         inputData.put("item", item);
         Map<String, Object> outputData = new HashMap<>();
         outputData.put("approved", approved);
@@ -38,8 +38,8 @@ public class RESTClient {
         ProcessServicesClient processClient = kieServicesClient.getServicesClient(ProcessServicesClient.class);
         Long processId = processClient.startProcess(CONTAINER_ID, PROCESS_ID, inputData);
 
-        System.out.println(String.format("Starting and completing task #%s (user=%s, level=%s, item=%s, approved=%s)",
-                processId, actor, level, item, approved));
+        System.out.println(String.format("Starting and completing task #%s (user=%s, price=%s, item=%s, approved=%s)",
+                processId, actor, price, item, approved));
 
         userTaskServicesClient.releaseTask(CONTAINER_ID, processId, OWNER);
         userTaskServicesClient.claimTask(CONTAINER_ID, processId, OWNER);
