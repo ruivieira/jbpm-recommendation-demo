@@ -172,14 +172,12 @@ In this service, the confidence threshold is set as `0.95` and as such the task 
 
 The second example implementation is the PMML-based recommendation service. PMML is a predictive model interchange standard, which allows for a wide variety of models to be reused in different platforms and programming languages.
 
-The service included in this demo consists of pre-trained model (with a dataset similar to the one generate by the `RESTClient`) which is executed by a PMML engine.
+The service included in this demo consists of pre-trained model (with a dataset similar to the one generate by the `RESTClient`) which is executed by a PMML engine. For this demo, the engine used was [jpmml-evaluator](https://github.com/jpmml/jpmml-evaluator), the *de facto* reference implementation of the PMML specification.
 
-There are two main differences when comparing it to the SMILE-based service:
+There are two main differences when comparing this service to the SMILE-based one:
 
-- *The model doesn't need a training phase.* The model has been already trained and serialised into the PMML standard. This means that we start using predictions straight away from jBPM.
-- *The `train` API method is a no-op in this case*. This means that whenever the service's `train` method is called, it will not be used for training in this example. Only the `predict` method is needed for a "read-only" model.
+- *The model doesn't need the training phase.* The model has been already trained and serialised into the PMML format. This means that we can start using predictions straight away from jBPM.
+- *The `train` API method is a no-op in this case*. This means that whenever the service's `train` method is called, it will not be used for training in this example (only the `predict` method is needed for a "read-only" model), as we can see from the figure below.
 
-
-
-$e=mc^2$  
+![](docs/images/sequence_pmml.png)
 
