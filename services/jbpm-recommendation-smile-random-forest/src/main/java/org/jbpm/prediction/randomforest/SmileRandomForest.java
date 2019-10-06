@@ -23,6 +23,8 @@ public class SmileRandomForest extends AbstractPredictionEngine implements Predi
     protected List<String> attributeNames = new ArrayList<>();
     private RandomForest model = null;
     private Set<String> outcomeSet = new HashSet<>();
+    private final int MINIMUM_OBSERVATIONS = 1200;
+    private int observations = 0;
 
     private void println(String format, Object... args) {
         System.out.println("[SMILE RF]" + String.format(format, args));
@@ -159,6 +161,11 @@ public class SmileRandomForest extends AbstractPredictionEngine implements Predi
     @Override
     public PredictionOutcome predict(Task task, Map<String, Object> inputData) {
         println("Predicting with input data: %s", inputData.toString());
+
+        if (observations > MINIMUM_OBSERVATIONS) {
+            this.confidenceThreshold = 0.75;
+        }
+
         Map<String, Object> outcomes = new HashMap<>();
         if (outcomeSet.size() >= 2) {
             model = new RandomForest(dataset, this.numberTrees);
@@ -171,7 +178,7 @@ public class SmileRandomForest extends AbstractPredictionEngine implements Predi
             final double confidence = posteriori[(int) prediction];
             outcomes.put("confidence", confidence);
 
-            println("prediction = %s, confidence = %f", predictionStr, confidence);
+            println("(for task id %s, total %s observations) prediction = %s, confidence = %f (threshold = %f)", task.getId(), this.observations, predictionStr, confidence, this.confidenceThreshold);
             logger.debug(inputData + ", prediction = " + predictionStr + ", confidence = " + confidence);
 
             return new PredictionOutcome(confidence, this.confidenceThreshold, outcomes);
@@ -192,6 +199,7 @@ public class SmileRandomForest extends AbstractPredictionEngine implements Predi
     public void train(Task task, Map<String, Object> inputData, Map<String, Object> outputData) {
         println("Training with input data: %s", inputData.toString());
         println("Training with output data: %s", outputData.toString());
+        this.observations += 1;
 
         addData(inputData, outputData.get(outcomeAttribute.getName()));
     }
