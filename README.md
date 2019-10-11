@@ -152,6 +152,8 @@ In the scenario where the the prediction's confidence is above the threshold, th
 
 As we've seen previously, when creating and completing a batch of tasks (as previously) we are simultaneously training the predictive model. The service implementation is based on a random forest model a popular ensemble learning method.
 
+When running the `RESTClient`, 1200 task will be created and completed to allow for a reasonably sized training dataset. The recommendation service initially has a confidence threshold of `1.0` and after a sufficiently large number (arbitrarily chosen as 1200) of observations are use for training, the confidence threshold drops to `0.75`. This is simply to demonstrate the two possible actions, *i.e.*  recommendation without completing and completing the task. This also allows us to avoid any [cold start](https://en.wikipedia.org/wiki/Cold_start_(computing)) problems. 
+
 After the model is trained with the task from `RESTClient`, we will now create a new Human Task.
 
 If we create a HT requesting the purchase of an `Apple` laptop from `John` with the price $2500, we should expect it to be approved.
