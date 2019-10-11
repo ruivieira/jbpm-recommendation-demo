@@ -13,14 +13,14 @@ Download and install jBPM from [here](https://www.jbpm.org/download/download.htm
 
 ## Recommendation service
 
-This repository contain two example recommendation service implementations as Maven modules and a REST client to populate the project with task to allow the predictive model training.
+This repository contains two example recommendation service implementations as Maven modules and a REST client to populate the project with task to allow the predictive model training.
 Start by downloading, or alternatively cloning, the repository:
 
 ```$shell
 $ git clone git@github.com:ruivieira/jbpm-recommendation-demo.git
 ```
 
-For this demo, two random forest based services, one using the [SMILE](https://github.com/haifengl/smile) library and another as Predictive Model Markup Language ([PMML](https://en.wikipedia.org/wiki/Predictive_Model_Markup_Language)) model, will be used.
+For this demo, two random forest-based services, one using the [SMILE](https://github.com/haifengl/smile) library and another as Predictive Model Markup Language ([PMML](https://en.wikipedia.org/wiki/Predictive_Model_Markup_Language)) model, will be used.
 The services, located respectively in `services/jbpm-recommendation-smile-random-forest` and `services/jbpm-recommendation-pmml-random-forest`, can be built with (using SMILE as an example):
 
 ```shell
@@ -124,6 +124,8 @@ This interface consists of three methods:
 - `predict(Task task, Map<String, Object> inputData)` - this method takes task information and the task's inputs from which we will derive the model's inputs, as a map. The method returns a `PredictionOutcome` instance, which we will look in closer detail later on
 - `train(Task task, Map<String, Object> inputData, Map<String, Object> outputData)` - this method, similarly to `predict`, takes task info and the task's inputs, but now we also need to provide the task's outputs, as a map, for training
 
+By default, if no other recommendation service is specified, jBPM will use a no-op service as defined in `org.jbpm.services.task.prediction.NoOpPredictionService`. This service returns an empty prediction and performs no training. jBPM processes will behave as if no recommendation prediction service is present.
+
 It is important to note that the prediction service makes no assumptions about which features will be used for model training and prediction. The API exposes the task information, inputs and outputs, but it is up to the developer/data scientist to select which inputs and outputs will be used for training, or if pre-processing is necessary, for instance. 
 
 The `PredictionOutcome` is a class which encapsulates the model's prediction for a certain `Map<String, Object> inputData`.
@@ -149,6 +151,8 @@ In the scenario where the the prediction's confidence is above the threshold, th
 ### SMILE-based service
 
 As we've seen previously, when creating and completing a batch of tasks (as previously) we are simultaneously training the predictive model. The service implementation is based on a random forest model a popular ensemble learning method.
+
+When running the `RESTClient`, 1200 task will be created and completed to allow for a reasonably sized training dataset. The recommendation service initially has a confidence threshold of `1.0` and after a sufficiently large number (arbitrarily chosen as 1200) of observations are use for training, the confidence threshold drops to `0.75`. This is simply to demonstrate the two possible actions, *i.e.*  recommendation without completing and completing the task. This also allows us to avoid any [cold start](https://en.wikipedia.org/wiki/Cold_start_(computing)) problems. 
 
 After the model is trained with the task from `RESTClient`, we will now create a new Human Task.
 
