@@ -13,6 +13,7 @@
 
   <properties>
     <pmml-version>1.4.9</pmml-version>
+    <checkstyle.skip>true</checkstyle.skip>
   </properties>
 
   <name>jBPM :: Prediction :: PMML random Forest based prediction service</name>

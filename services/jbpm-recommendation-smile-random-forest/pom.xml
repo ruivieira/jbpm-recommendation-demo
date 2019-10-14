@@ -23,6 +23,10 @@
         </dependency>
       </dependencies>
     </dependencyManagement>
+
+    <properties>
+        <checkstyle.skip>true</checkstyle.skip>
+    </properties>
   
     <dependencies>
         <dependency>
