@@ -1,9 +1,9 @@
-# jbpm-recommendation-demo
+# jBPM prediction service demo
 
-Demo project for the recommendation service API in jBPM.
+Demo project for the prediction service API in jBPM.
 
-First we will go through the necessary steps to setup the demo and lastly we will look at some implementation details on how the recommendation API works.
-This will allow you to learn how to create your own machine learning (ML) based recommendation services and how to integrate them with jBPM.
+First we will go through the necessary steps to setup the demo and lastly we will look at some implementation details on how the prediction API works.
+This will allow you to learn how to create your own machine learning (ML) based prediction services and how to integrate them with jBPM.
 
 # Setup
 
@@ -11,9 +11,9 @@ This will allow you to learn how to create your own machine learning (ML) based 
 
 Download and install jBPM from [here](https://www.jbpm.org/download/download.html).
 
-## Recommendation service
+## Prediction service
 
-This repository contains two example recommendation service implementations as Maven modules and a REST client to populate the project with task to allow the predictive model training.
+This repository contains two example prediction service implementations as Maven modules and a REST client to populate the project with task to allow the predictive model training.
 Start by downloading, or alternatively cloning, the repository:
 
 ```$shell
@@ -42,7 +42,7 @@ The PMML-based service expects to find the PMML model in `META-INF`, so after co
 $ zip -r kie-server.war META-INF
 ```
 
-jBPM will search for a recommendation service with an identifier specified by a Java property named `org.jbpm.task.prediction.service`. Since in our demo, the random forest service has the indentifier `SMILERandomForest`, we can set this value before starting the workbench, for instance as an environment variable:
+jBPM will search for a prediction service with an identifier specified by a Java property named `org.jbpm.task.prediction.service`. Since in our demo, the random forest service has the indentifier `SMILERandomForest`, we can set this value before starting the workbench, for instance as an environment variable:
 
 ```shell
 $ export JAVA_OPTS="-Dorg.jbpm.task.prediction.service=SMILERandomForest"
@@ -68,7 +68,7 @@ One the WB has completed the startup, you can go to [http://localhost:8080/busin
 https://github.com/ruivieira/jbpm-recommendation-demo-project.git
 ```
 
-The project consists of a single Human Task, which can be inspected using the WB. The task is generic and simple enough in order to demonstrate the working of the jBPM's recommendation API.
+The project consists of a single Human Task, which can be inspected using the WB. The task is generic and simple enough in order to demonstrate the working of the jBPM's prediction API.
 
 ![human_task](docs/images/human_task.png)
 
@@ -84,7 +84,7 @@ The task provides as **outputs**:
 
 ## Batch creation of tasks
 
-This repository contains a REST client (under `client`) which allows to add Human Tasks in batch in order to have sufficient data points to train the model, so that we can have meaningful recommendations.
+This repository contains a REST client (under `client`) which allows to add Human Tasks in batch in order to have sufficient data points to train the model, so that we can have meaningful predictions.
 
 ***NOTE***: Before running the REST client, make sure that the Workbench is running and the demo project is deployed and also running.
 
@@ -102,9 +102,9 @@ The tasks' completion will adhere to the following logic:
 * The purchase of a laptop of brand `Apple` requested by user `John` or  `Mary` will be approved if the price is around $2500
 * The purchase of a laptop of brand `Lenovo` requested by user `John` or  `Mary` will be rejected if the price is around $2500
 
-The prices for Lenovo and Apple laptop are drawn from Normal distributions with respective means of 1500 and 2500 (pictured below). Although the recommendation service is not aware of the deterministic rules we've used to set the task outcome, it will train the model based on the data it receives.
+The prices for Lenovo and Apple laptop are drawn from Normal distributions with respective means of 1500 and 2500 (pictured below). Although the prediction service is not aware of the deterministic rules we've used to set the task outcome, it will train the model based on the data it receives.
 
-In the following sections we will explain the internal working of a recommendation service, how to test this project in the Workbench and how to create your own recommendation service.
+In the following sections we will explain the internal working of a prediction service, how to test this project in the Workbench and how to create your own prediction service.
 
 ![prices](docs/images/prices.png)
 
@@ -114,7 +114,7 @@ In the following sections we will explain the internal working of a recommendati
 
 jBPM offers an API which allows for predictive models to be trained with Human Tasks (HT) data and for HT to incorporate the model's predictions as outputs ore even complete a HT.
 
-This is achieved by connecting the HT handling to a *recommendation service*. A recommendation service is simply any third-party class wich implements the `org.kie.internal.task.api.prediction.PredictionService` interface.
+This is achieved by connecting the HT handling to a *prediction service*. A prediction service is simply any third-party class wich implements the `org.kie.internal.task.api.prediction.PredictionService` interface.
 
 ![api_diagram](docs/images/api.png)
 
@@ -124,7 +124,7 @@ This interface consists of three methods:
 - `predict(Task task, Map<String, Object> inputData)` - this method takes task information and the task's inputs from which we will derive the model's inputs, as a map. The method returns a `PredictionOutcome` instance, which we will look in closer detail later on
 - `train(Task task, Map<String, Object> inputData, Map<String, Object> outputData)` - this method, similarly to `predict`, takes task info and the task's inputs, but now we also need to provide the task's outputs, as a map, for training
 
-By default, if no other recommendation service is specified, jBPM will use a no-op service as defined in `org.jbpm.services.task.prediction.NoOpPredictionService`. This service returns an empty prediction and performs no training. jBPM processes will behave as if no recommendation prediction service is present.
+By default, if no other prediction service is specified, jBPM will use a no-op service as defined in `org.jbpm.services.task.prediction.NoOpPredictionService`. This service returns an empty prediction and performs no training. jBPM processes will behave as if no prediction service is present.
 
 It is important to note that the prediction service makes no assumptions about which features will be used for model training and prediction. The API exposes the task information, inputs and outputs, but it is up to the developer/data scientist to select which inputs and outputs will be used for training, or if pre-processing is necessary, for instance. 
 
@@ -152,21 +152,21 @@ In the scenario where the the prediction's confidence is above the threshold, th
 
 As we've seen previously, when creating and completing a batch of tasks (as previously) we are simultaneously training the predictive model. The service implementation is based on a random forest model a popular ensemble learning method.
 
-When running the `RESTClient`, 1200 task will be created and completed to allow for a reasonably sized training dataset. The recommendation service initially has a confidence threshold of `1.0` and after a sufficiently large number (arbitrarily chosen as 1200) of observations are use for training, the confidence threshold drops to `0.75`. This is simply to demonstrate the two possible actions, *i.e.*  recommendation without completing and completing the task. This also allows us to avoid any [cold start](https://en.wikipedia.org/wiki/Cold_start_(computing)) problems. 
+When running the `RESTClient`, 1200 task will be created and completed to allow for a reasonably sized training dataset. The prediction service initially has a confidence threshold of `1.0` and after a sufficiently large number (arbitrarily chosen as 1200) of observations are use for training, the confidence threshold drops to `0.75`. This is simply to demonstrate the two possible actions, *i.e.*  prediction without completing and completing the task. This also allows us to avoid any [cold start](https://en.wikipedia.org/wiki/Cold_start_(computing)) problems. 
 
 After the model is trained with the task from `RESTClient`, we will now create a new Human Task.
 
 If we create a HT requesting the purchase of an `Apple` laptop from `John` with the price $2500, we should expect it to be approved.
 
-If fact, when claiming the task, we can see that the recommendation service recommends the purchase to be approved with a "confidence" of 91%.
+If fact, when claiming the task, we can see that the prediction service recommends the purchase to be approved with a "confidence" of 91%.
 
 ![form](docs/images/form.png)
 
-If he now create a task for the request of a `Lenovo` laptop from `Mary` with the price $1437, he would expect it to be approved. We can see that this is the case, where the form is filled in by the recommendation service with an approved status with a "confidence" of 86.5%.
+If he now create a task for the request of a `Lenovo` laptop from `Mary` with the price $1437, he would expect it to be approved. We can see that this is the case, where the form is filled in by the prediction service with an approved status with a "confidence" of 86.5%.
 
 ![form2](docs/images/form2.png)
 
-We can also see, as expected, what happens when `John` tries to order a `Lenovo` for $2700. The recommendation service fills the form as "not approved" with a "confidence" of 71%.
+We can also see, as expected, what happens when `John` tries to order a `Lenovo` for $2700. The prediction service fills the form as "not approved" with a "confidence" of 71%.
 
 ![form3](docs/images/form3.png)
 
@@ -174,7 +174,7 @@ In this service, the confidence threshold is set as `0.95` and as such the task 
 
 ### PMML-based service
 
-The second example implementation is the PMML-based recommendation service. PMML is a predictive model interchange standard, which allows for a wide variety of models to be reused in different platforms and programming languages.
+The second example implementation is the PMML-based prediction service. PMML is a predictive model interchange standard, which allows for a wide variety of models to be reused in different platforms and programming languages.
 
 The service included in this demo consists of pre-trained model (with a dataset similar to the one generate by the `RESTClient`) which is executed by a PMML engine. For this demo, the engine used was [jpmml-evaluator](https://github.com/jpmml/jpmml-evaluator), the *de facto* reference implementation of the PMML specification.
 
@@ -185,3 +185,6 @@ There are two main differences when comparing this service to the SMILE-based on
 
 ![](docs/images/sequence_pmml.png)
 
+
+
+A demonstration video is available [here](https://youtu.be/bqMEPddhKkU) (description in subtitles).
