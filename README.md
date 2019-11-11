@@ -185,3 +185,6 @@ There are two main differences when comparing this service to the SMILE-based on
 
 ![](docs/images/sequence_pmml.png)
 
+
+
+A demonstration video is available [here](https://youtu.be/bqMEPddhKkU) (description in subtitles).
